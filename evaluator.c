@@ -8,12 +8,17 @@
 int result = 0;
 char op = ' ';
 
+void hi()
+{
+	printf("I AM AT %d\n" + __LINE__);
+}
 
 int evaluate(exprs *exprList) {
 	expr *e = exprList->e;
 	switch (e->type) {
 	case eString:
 		printf("%s\n", e->sVal);
+		hi();
 		break;
 	case eIdent:
 		if (strcmp(e->sVal, "+") == 0) {
@@ -60,7 +65,7 @@ int evaluate(exprs *exprList) {
 		break;
 	}
 	if (e->sVal != NULL) {
-		//printf("Node evaluated to: %s\n", e->sVal);
+		printf("Node evaluated to: %s\n", e->sVal);
 	}
 
 	if (exprList->n != NULL) {
