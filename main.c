@@ -1,16 +1,16 @@
-/* 
+/*
  * Simple Expression Interpreter
  * -- MAINLINE & Utilities --
  * Tami Meredith, June 2017
  */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include "phun.h"
 
 /* STAGE == 1:SCAN, 2:PARSE, 3:EVAL */
-#define STAGE 2
+#define STAGE 3
 
 /*
  * Global variables for input file
@@ -18,7 +18,7 @@
 FILE *ifp;
 char *name;
 int   idx = 0;
-int   line = 1; 
+int   line = 1;
 
 /*
  * Basic error function. Print a message and abort.
@@ -42,8 +42,8 @@ char nextChar () {
    return(c);
 }
 
-/* 
- * Return a character to the input stream 
+/*
+ * Return a character to the input stream
  */
 void returnChar (char c) {
     ungetc(c, ifp);
@@ -69,13 +69,13 @@ int main (int argc, char** argv) {
         t = scan();
         printToken(t);
         if (t.type == tEOF) break;
-    }        
+    }
 #elif STAGE == 2 /* Parse */
     e = parse();
     printList(e, 0);
 #else /* Evaluate */
     e = parse();
-    /* Evaluate e here */
+    evaluate(e);
 #endif
     return (SUCCESS);
 }

@@ -1,8 +1,8 @@
-/* 
+/*
  * Phun Interpreter
  * Tami Meredith, June 2017
  */
- 
+
 /*
  * Constants
  */
@@ -19,7 +19,7 @@ typedef enum { tBEGIN, tEND, tQUOTE, tINT, tIDENT, tSTRING, tEOF } tokentype;
 typedef struct {
     tokentype type;
     int       iVal;
-    char     *sVal;    
+    char     *sVal;
 } token;
 
 /*
@@ -53,5 +53,7 @@ exprs *parse();
 exprs *parseFileList (token t);
 exprs *parseExprList (token t);
 expr  *parseExpr (token t);
+
+int evaluate(exprs *exprList);
 
 /* end of phun.h */
