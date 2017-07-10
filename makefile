@@ -1,4 +1,4 @@
-OBJS = main.o parser.o lexer.o
+OBJS = main.o parser.o lexer.o evaluator.o
 DEBUG = -g
 CC = gcc
 CFLAGS = -Wall -c $(DEBUG)
@@ -8,14 +8,16 @@ all: phun
 
 phun: $(OBJS)
 	$(CC) $(LFLAGS) $(OBJS) -o phun
-   
+
 main.o: main.c phun.h
 	$(CC) $(DEBUG) $(CFLAGS) main.c
 parser.o: parser.c phun.h
 	$(CC) $(DEBUG) $(CFLAGS) parser.c
 lexer.o: lexer.c phun.h
 	$(CC) $(DEBUG) $(CFLAGS) lexer.c
-    
+evaluator.o: evaluator.c phun.h
+	$(CC) $(DEBUG) $(CFLAGS) evaluator.c
+
 phun.h:
 	touch *.c
 
