@@ -60,6 +60,7 @@ int main (int argc, char** argv) {
     token t;
 #else /* Parse or Evaluate */
     exprs *e;
+    symtab *symboltable = malloc(sizeof(symtab));
 #endif
     ifp = fopen (argv[1], "r");
     name = argv[1];
@@ -76,7 +77,7 @@ int main (int argc, char** argv) {
 #else /* Evaluate */
 
     e = parse();
-    evaluate(e);
+    evaluate(symboltable, e);
 
 #endif
     return (SUCCESS);

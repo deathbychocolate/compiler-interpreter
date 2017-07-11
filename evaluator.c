@@ -7,7 +7,7 @@
 
 int result = 0;
 char op = ' ';
-symtab *symboltable;
+int initialise = 1;
 
 void hi()
 {
@@ -41,6 +41,8 @@ int addToSymTab(symtab *sthead, char *id, int eval) {
 	cursor->nextdef = newdef;
 	newdef->ident = id;
 	newdef->def = newNode;
+
+	return 1;
 }
 
 //gets definition of identifier in symbol table
@@ -64,7 +66,8 @@ int getDef(symtab *sthead, char *ident) {
 }
 
 //evaluate the expression
-int evaluate(exprs *exprList) {
+//the symtab variable "symboltable" is created in main()
+int evaluate(symtab *symboltable, exprs *exprList) {
 
 	expr *e = exprList->e;
 
@@ -78,20 +81,20 @@ int evaluate(exprs *exprList) {
 			if (strcmp(e->sVal, "+") == 0) {
 				result = 0;
 				op = '+';
-				result = evaluate(exprList->n);
+				result = evaluate(symboltable, exprList->n);
 			}
 
 			if (strcmp(e->sVal, "-") == 0) {
 				result = 0;
 				op = '-';
-				result = evaluate(exprList->n);
+				result = evaluate(symboltable, exprList->n);
 			}
 			printf("%s\n",e->sVal);
 			//If user-defined identifier
 			if (strcmp(e->sVal, "define")==0) {
 				//assign identifier to a value
 				printf("%s\n", exprList->n->e->sVal);
-				addToSymTab(symboltable, exprList->n->e->sVal, evaluate(exprList->n->n));
+				addToSymTab(symboltable, exprList->n->e->sVal, evaluate(symboltable, exprList->n->n));
 			}
 			else {
 				if(inSymTab(symboltable, e->sVal)) {
@@ -109,15 +112,15 @@ int evaluate(exprs *exprList) {
 				exprList = exprList->n;
 				e = exprList->e;
 				if (e->type == eExprList) {
-					result = evaluate(e->eVal);
+					result = evaluate(symboltable, e->eVal);
 				}
 				switch (op)
 				{
 					case '+':
-						result += evaluate(exprList);
+						result += evaluate(symboltable, exprList);
 						break;
 					case '-':
-						result -= evaluate(exprList);
+						result -= evaluate(symboltable, exprList);
 						break;
 					default:
 						break;
@@ -126,7 +129,7 @@ int evaluate(exprs *exprList) {
 			break;
 		case eExprList:
 			if (e->eVal != NULL) {
-				evaluate(e->eVal);
+				evaluate(symboltable, e->eVal);
 			}
 			break;
 		default:
@@ -140,7 +143,7 @@ int evaluate(exprs *exprList) {
 	}
 
 	if (exprList->n != NULL) {
-		evaluate(exprList->n);
+		evaluate(symboltable, exprList->n);
 	}
 	return (result);
 }
