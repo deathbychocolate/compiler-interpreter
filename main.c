@@ -77,6 +77,7 @@ int main (int argc, char** argv) {
 #else /* Evaluate */
 
     e = parse();
+	printList(e, 0);
     evaluate(symboltable, e);
 
 #endif

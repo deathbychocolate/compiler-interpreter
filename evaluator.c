@@ -84,14 +84,32 @@ int evaluate(symtab *symboltable, exprs *exprList) {
 				result = evaluate(symboltable, exprList->n);
 			}
 
-			if (strcmp(e->sVal, "-") == 0) {
+			else if (strcmp(e->sVal, "-") == 0) {
 				result = 0;
 				op = '-';
 				result = evaluate(symboltable, exprList->n);
 			}
-			printf("%s\n",e->sVal);
+			else if (strcmp(e->sVal, "car") == 0) {
+				exprList = exprList->n;
+				if (exprList->e->type == eExprList &&
+					strcmp(exprList->e->eVal->e->sVal,"quote")==0) {
+					exprList = exprList->e->eVal->n;
+					if (exprList->e->eVal->e->type == eInt) {
+						printf(" ==>%d\n", exprList->e->eVal->e->iVal);
+					}
+					else if(exprList->e->eVal->e->type == eIdent||
+						exprList->e->eVal->e->type == eString)
+					{
+						printf(" ==>%s\n", exprList->e->eVal->e->sVal);
+					}
+				}
+				else
+				{
+					fatalError("Not a valid car argument");
+				}
+			}
 			//If user-defined identifier
-			if (strcmp(e->sVal, "define")==0) {
+			else if (strcmp(e->sVal, "define")==0) {
 				//assign identifier to a value
 				printf("%s\n", exprList->n->e->sVal);
 				addToSymTab(symboltable, exprList->n->e->sVal, evaluate(symboltable, exprList->n->n));
@@ -103,6 +121,7 @@ int evaluate(symtab *symboltable, exprs *exprList) {
 				else {
 					fatalError("Uninitialized identifier");
 				}
+				printf("%s\n", e->sVal);
 			}
 
 			break;
@@ -138,7 +157,8 @@ int evaluate(symtab *symboltable, exprs *exprList) {
 			break;
 	}
 
-	if (e->sVal != NULL) {
+	if (e->type == eIdent &&
+		e->sVal != NULL) {
 		printf("Node evaluated to: %s\n", e->sVal);
 	}
 
