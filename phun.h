@@ -53,11 +53,11 @@ typedef struct node {
     exprtype type;
     int iVal;
     char *sVal;
-} list;
+} node;
 
 typedef struct st {
   char *ident; //name of identifier (ie, a)
-  list *def; //identifier definition (ie, + -> 2 -> 3)
+  node *def; //identifier definition (ie, + -> 2 -> 3)
   struct st *nextdef; //the next identifier in the table
 } symtab;
 
@@ -77,5 +77,8 @@ exprs *parseExprList (token t);
 expr  *parseExpr (token t);
 
 int evaluate(exprs *exprList);
+int inSymTab(symtab *st, char *ident);
+int addToSymTab(symtab *sthead, char *ident, int eval);
+int getDef(symtab *sthead, char *ident);
 
 /* end of phun.h */
