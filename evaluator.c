@@ -63,6 +63,17 @@ int getDef(symtab *sthead, char *ident) {
 
 }
 
+void printItem(exprs *exprList) {
+	if (exprList->e->type == eInt) {
+		printf(" ==>%d\n", exprList->e->iVal);
+	}
+	else if (exprList->e->type == eIdent ||
+		exprList->e->eVal->e->type == eString)
+	{
+		printf(" ==>%s\n", exprList->e->sVal);
+	}
+}
+
 //evaluate the expression
 int evaluate(exprs *exprList) {
 
@@ -89,20 +100,31 @@ int evaluate(exprs *exprList) {
 			else if (strcmp(e->sVal, "car") == 0) {
 				exprList = exprList->n;
 				if (exprList->e->type == eExprList &&
-					strcmp(exprList->e->eVal->e->sVal,"quote")==0) {
+					strcmp(exprList->e->eVal->e->sVal, "quote") == 0) {
 					exprList = exprList->e->eVal->n;
-					if (exprList->e->eVal->e->type == eInt) {
-						printf(" ==>%d\n", exprList->e->eVal->e->iVal);
-					}
-					else if(exprList->e->eVal->e->type == eIdent||
-						exprList->e->eVal->e->type == eString)
-					{
-						printf(" ==>%s\n", exprList->e->eVal->e->sVal);
+					printItem(exprList->e->eVal);
+				}
+
+				else{
+					fatalError("Not a valid car argument");
+				}
+			}
+			// cdr handling
+			else if (strcmp(e->sVal, "cdr") == 0) {
+				exprList = exprList->n;
+				if (exprList->e->type == eExprList &&
+					strcmp(exprList->e->eVal->e->sVal, "quote") == 0) {
+					exprList = exprList->e->eVal->n;
+					exprList = exprList->e->eVal->n;
+					printItem(exprList);
+					while (exprList->n != NULL) {
+						exprList = exprList->n;
+						printItem(exprList);
 					}
 				}
-				else
-				{
-					fatalError("Not a valid car argument");
+
+				else {
+					fatalError("Not a valid cdr argument");
 				}
 			}
 			//If user-defined identifier
