@@ -8,6 +8,40 @@
 int result = 0;
 char op = ' ';
 int initialise = 1;
+exprs *resultList;
+
+void addToResultList(exprs *e) {
+	if (resultList == NULL) {
+		resultList = newExprList(e->e, e->n);
+	}
+	else
+	{
+		exprs *temp = resultList;
+		while (temp->n != NULL)
+		{
+			temp = temp->n;
+		}
+		temp->n = e;
+	}
+}
+
+void printResultList(){
+	printf("(");
+	exprs *temp = resultList;
+	while (temp != NULL)
+	{
+		if (temp->e->type == eInt) {
+			printf(" %d ", temp->e->iVal);
+		}
+		else if (temp->e->type == eIdent ||
+			temp->e->eVal->e->type == eString)
+		{
+			printf(" %s ", temp->e->sVal);
+		}
+		temp = temp->n;
+	}
+	printf(")\n");
+}
 
 void hi()
 {
@@ -100,6 +134,7 @@ int evaluate(symtab *symboltable, exprs *exprList) {
 				op = '-';
 				result = evaluate(symboltable, exprList->n);
 			}
+			// car handling
 			else if (strcmp(e->sVal, "car") == 0) {
 				exprList = exprList->n;
 				if (exprList->e->type == eExprList &&
@@ -125,10 +160,23 @@ int evaluate(symtab *symboltable, exprs *exprList) {
 						printItem(exprList);
 					}
 				}
-
 				else {
 					fatalError("Not a valid cdr argument");
 				}
+			}
+			// prints off a list with provided values
+			if (strcmp(e->sVal, "list") == 0) {
+				while (exprList->n != NULL) {
+					exprList = exprList->n;
+					if (exprList->e->type == eExprList &&
+						(strcmp(exprList->e->eVal->e->sVal, "quote") == 0)) {
+						addToResultList(exprList->e->eVal->n);
+					}
+					else if (exprList->e->type ==eInt) {
+						addToResultList(exprList);
+					}
+				}
+				printResultList();
 			}
 			//If user-defined identifier
 			else if (strcmp(e->sVal, "define")==0) {

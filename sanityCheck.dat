@@ -1,2 +1,1 @@
-(cdr '(a 2 3 4 5))
-(car '(a b c))
+(list 'a 'b 3)
