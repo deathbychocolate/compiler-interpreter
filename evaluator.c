@@ -91,7 +91,14 @@ int evaluate(exprs *exprList) {
 				if (exprList->e->type == eExprList &&
 					strcmp(exprList->e->eVal->e->sVal,"quote")==0) {
 					exprList = exprList->e->eVal->n;
-					printf(" ==>%d\n",exprList->e->eVal->e->iVal);
+					if (exprList->e->eVal->e->type == eInt) {
+						printf(" ==>%d\n", exprList->e->eVal->e->iVal);
+					}
+					else if(exprList->e->eVal->e->type == eIdent||
+						exprList->e->eVal->e->type == eString)
+					{
+						printf(" ==>%s\n", exprList->e->eVal->e->sVal);
+					}
 				}
 				else
 				{
