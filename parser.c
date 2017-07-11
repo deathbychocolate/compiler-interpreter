@@ -1,4 +1,4 @@
-/* 
+/*
  * Phun Interpreter
  * Parser Code (including AST creation)
  * Tami Meredith, June 2017
@@ -13,15 +13,15 @@
  *       |  ( EXPRS )
  *       |  ' EXPR
  */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include "phun.h"
 
-/* 
- * AST Construction Functions 
- */ 
+/*
+ * AST Construction Functions
+ */
 expr *newStringExpr(char *s) {
     expr *result = malloc(sizeof (expr));
     result->sVal = s;
@@ -60,14 +60,14 @@ exprs *newExprList(expr *e, exprs *n) {
 /*
  * AST Dump for debugging and testing
  */
-void printList(exprs *l, int n); 
+void printList(exprs *l, int n);
 
 void indent(int n) {
     int i;
     for (i = 0; i < n; i++)
         printf("  ");
 }
-  
+
 void printExpr(expr *e, int n) {
     indent(n);
     switch (e->type) {
@@ -90,16 +90,16 @@ void printExpr(expr *e, int n) {
             break;
     }
 }
- 
+
 void printList(exprs *l, int n) {
     if (l == NULL) return;
     printExpr(l->e, n);
     printList(l->n, n);
 }
- 
+
 /*
  * Parsing Rules
- */ 
+ */
 exprs *parseFileList (token t) {
     expr *e;
     if (t.type == tEOF) {
@@ -132,7 +132,7 @@ expr *parseExpr (token t) {
             return (newStringExpr (t.sVal));
         case tQUOTE:
             return  (newListExpr
-                        (newExprList 
+                        (newExprList
                             (newIdentExpr("quote"),
                                 newExprList(parseExpr(scan ()), NULL))));
         default:

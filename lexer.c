@@ -3,13 +3,13 @@
  * Lexical Analysis Code
  * Tami Meredith, June 2017
  */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include "phun.h"
- 
+
 /* Length of the longest identifier or string must be < BUFLEN */
 #define BUFLEN 1024
 
@@ -27,12 +27,12 @@ void printToken (token t) {
       case tINT: printf("Integer [%d]", t.iVal); break;
       case tEOF: printf("End of File"); break;
       default: break;
-    } 
+    }
     printf("\n");
 }
 
-/* 
- * Extended characters allowed in identifiers 
+/*
+ * Extended characters allowed in identifiers
  */
 int isextended(char c) {
     switch(c) {
@@ -69,7 +69,7 @@ token scan() {
     int   value = 0;
     char  buf[BUFLEN];
     int   len = 0;
-    
+
     while (c = nextChar()) {
 
         switch (s) {
@@ -79,22 +79,22 @@ token scan() {
                 switch (c) {
                     case ';':
                         s = sCOMMENT;
-                        break; 
-                    case ')': 
-                        t.type = tEND;    
+                        break;
+                    case ')':
+                        t.type = tEND;
                         return(t);
-                    case '(': 
-                        t.type = tBEGIN;    
+                    case '(':
+                        t.type = tBEGIN;
                         return(t);
-                    case EOF: 
-                        t.type = tEOF;    
+                    case EOF:
+                        t.type = tEOF;
                         return(t);
                     case '\'':
                         t.type = tQUOTE;
                         return(t);
-                    case '"': 
+                    case '"':
                         s = sSTRING;
-                        break;    
+                        break;
                     default:
                         if (isdigit(c)) {
                             value = c - '0';
@@ -105,15 +105,15 @@ token scan() {
                         } else {
                             fatalError("Invalid character");
                         }
-                        break; 
+                        break;
                 }
                 break;
 
             case sCOMMENT:
-                if (c == '\n') 
+                if (c == '\n')
                     s = sSTART;
                 break;
-         
+
             case sINT:
                 if (isdigit(c)) {
                     value = (value * 10) + (c - '0');
@@ -126,9 +126,9 @@ token scan() {
                     t.iVal = value;
                     t.type = tINT;
                     return(t);
-                } 
+                }
                 break;
- 
+
             case sSTRING:
                 if (c == '\n') {
                     fatalError("End of line in a string");
@@ -141,15 +141,15 @@ token scan() {
                     return(t);
                 } else {
                     buf[len++] = c;
-                    if (len >= BUFLEN) 
+                    if (len >= BUFLEN)
                         fatalError("String too long");
-                } 
+                }
                 break;
 
             case sIDENT:
                 if (isalpha(c) || isextended(c) || isdigit(c)) {
                     buf[len++] = c;
-                    if (len >= BUFLEN) 
+                    if (len >= BUFLEN)
                         fatalError("Identifier too long");
                 } else if (isspace(c)) {
                     buf[len] = 0;
@@ -162,7 +162,7 @@ token scan() {
                     t.sVal = strdup(buf);
                     t.type = tIDENT;
                     return(t);
-                } 
+                }
                 break;
 
             default:
@@ -171,7 +171,7 @@ token scan() {
                 if (!isspace(c))
                     fatalError ("Invalid character");
                 break;
-        }        
+        }
     }
 }
 

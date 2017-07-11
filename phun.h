@@ -40,6 +40,28 @@ typedef struct exprList {
 } exprs;
 
 /*
+ * Types for evaluating
+ */
+
+ /* Symbol table:
+  * Each definition is a linked list which
+  * which holds the evaluation, and the
+  * entire symbol table is a linked list of
+  * definitions. */
+typedef struct node {
+    struct node *next;
+    exprtype type;
+    int iVal;
+    char *sVal;
+} list;
+
+typedef struct st {
+  char *ident; //name of identifier (ie, a)
+  list *def; //identifier definition (ie, + -> 2 -> 3)
+  struct st *nextdef; //the next identifier in the table
+} symtab;
+
+/*
  * Function Declarations
  */
 void fatalError (char *msg);

@@ -74,8 +74,10 @@ int main (int argc, char** argv) {
     e = parse();
     printList(e, 0);
 #else /* Evaluate */
+
     e = parse();
     evaluate(e);
+
 #endif
     return (SUCCESS);
 }

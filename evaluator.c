@@ -7,6 +7,7 @@
 
 int result = 0;
 char op = ' ';
+symtab symboltable;
 
 void hi()
 {
@@ -66,6 +67,7 @@ int evaluate(exprs *exprList) {
 			result = 0; /* dead code, assignment shouldn't happen */
 			break;
 	}
+
 	if (e->sVal != NULL) {
 		printf("Node evaluated to: %s\n", e->sVal);
 	}
