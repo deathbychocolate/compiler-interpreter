@@ -78,7 +78,9 @@ expr  *parseExpr (token t);
 
 int evaluate(symtab *symboltable, exprs *exprList);
 int inSymTab(symtab *st, char *ident);
-int addToSymTab(symtab *sthead, char *ident, int eval);
+symtab* addToSymTab(symtab *sthead, char *ident, int eval);
 int getDef(symtab *sthead, char *ident);
+void addToResultList(exprs *e);
+
 
 /* end of phun.h */

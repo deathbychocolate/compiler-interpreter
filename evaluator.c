@@ -50,7 +50,7 @@ void hi()
 
 //check if the given identifier is in the symbol table
 int inSymTab(symtab *st, char *id) {
-	while (st != NULL) {
+	while (st->ident != NULL) {
 		if (strcmp(st->ident,id) == 0) {
 			return 1;
 		}
@@ -62,9 +62,10 @@ int inSymTab(symtab *st, char *id) {
 }
 
 //adds an evaluation of an identifier to symbol table
-int addToSymTab(symtab *sthead, char *id, int eval) {
-	symtab *cursor = sthead;
-	while(cursor->nextdef != NULL)
+symtab* addToSymTab(symtab *st, char *id, int eval) {
+	symtab *cursor = st;
+
+	while(cursor != NULL)
 		cursor = cursor->nextdef;
 
 	node *newNode = malloc(sizeof(node));
@@ -76,7 +77,7 @@ int addToSymTab(symtab *sthead, char *id, int eval) {
 	newdef->ident = id;
 	newdef->def = newNode;
 
-	return 1;
+	return st;
 }
 
 //gets definition of identifier in symbol table
@@ -182,13 +183,15 @@ int evaluate(symtab *symboltable, exprs *exprList) {
 			else if (strcmp(e->sVal, "define")==0) {
 				//assign identifier to a value
 				printf("%s\n", exprList->n->e->sVal);
-				addToSymTab(symboltable, exprList->n->e->sVal, evaluate(symboltable, exprList->n->n));
+				int eval = evaluate(symboltable, exprList->n->n);
+				symboltable = addToSymTab(symboltable, exprList->n->e->sVal, eval);
 			}
 			else {
 				if(inSymTab(symboltable, e->sVal)) {
 					return getDef(symboltable, e->sVal);
 				}
 				else {
+					printf(e->sVal);
 					fatalError("Uninitialized identifier");
 				}
 				printf("%s\n", e->sVal);
