@@ -75,10 +75,11 @@ exprs *parse();
 exprs *parseFileList (token t);
 exprs *parseExprList (token t);
 expr  *parseExpr (token t);
+exprs *clone(exprs *e);
 
-int evaluate(symtab *symboltable, exprs *exprList);
-int inSymTab(symtab *st, char *ident);
-symtab* addToSymTab(symtab *sthead, char *ident, int eval);
+int evaluate(exprs *exprList);
+int inSymTab(char *ident);
+symtab* addToSymTab(char *ident, int eval);
 int getDef(symtab *sthead, char *ident);
 void addToResultList(exprs *e);
 
