@@ -15,29 +15,21 @@ exprs *makeNewResultList(exprs *resultList, exprs *e) {
 		resultList = newExprList(e->e, e->n);
 	}
 }
-expr *makeNewExpr(expr *e) {
-	expr *result = malloc(sizeof(expr));
-	result->type = e->type;
-	result->iVal = e->iVal;
-	result->sVal = e->sVal;
 
-	if (result->type == eExprList) {
-		result->eVal = makeNewResultList(e->eVal, e->eVal->e);
-	}
-	return result;
-}
+exprs *addToResultList(exprs *resultList, exprs *e) {
 
-exprs *addToResultList(exprs *resultList, expr *e) {
-	expr *tempExpr = makeNewExpr(e);
 	if (resultList == NULL) {
-		resultList = newExprList(NULL,NULL);
+		resultList = newExprList(e->e,e->n);
 	}
-	exprs *temp = resultList; 
-	while (temp->n!=NULL && temp->e != NULL)
+	else
 	{
-		temp = temp->n;
+		exprs *temp = resultList;
+		while (temp->n != NULL)
+		{
+			temp = temp->n;
+		}
+		temp->n = e;
 	}
-	temp->e = tempExpr;
 
 	return resultList;
 }
@@ -53,10 +45,12 @@ void printResultList(exprs *list){
 		else if (temp->e->type == eIdent ||
 			temp->e->type == eString)
 		{
-			printf(" %s ", temp->e->sVal);
+			if (strcmp(temp->e->sVal, "quote")!=0) {
+				printf(" %s ", temp->e->sVal);
+			}
 		}
 		else if (temp->e->type == eExprList) {
-			printResultList(temp->e->eVal->n);
+			printResultList(temp->e->eVal);
 		}
 		temp = temp->n;
 	}
@@ -224,6 +218,7 @@ exprs *evaluate(exprs *exprList) {
 				while (exprList->n != NULL) {
 					exprList = exprList->n;
 				}
+				return resultList;
 			}
 
 			//cons case
@@ -234,7 +229,16 @@ exprs *evaluate(exprs *exprList) {
 				if (e->type == eExprList) {
 					if (e->eVal->e->type == eIdent
 						&& strcmp(e->eVal->e->sVal, "quote") == 0) {
-						resultList= addToResultList(resultList, e->eVal->n->e);
+						resultList= addToResultList(resultList, e->eVal->n);
+					}
+					exprList = exprList->n;
+					e = exprList->e;
+					if (e->type == eExprList) {
+						if (e->eVal->e->type == eIdent
+							&& strcmp(e->eVal->e->sVal, "quote") == 0) {
+							exprList = e->eVal->n->e->eVal;
+							resultList = addToResultList(resultList, exprList);
+						}
 					}
 				}
 				else if (e->type == eIdent) {
@@ -242,43 +246,28 @@ exprs *evaluate(exprs *exprList) {
 						e->iVal = getDef(symboltable, e->sVal);
 						e->type = eInt;
 						e->sVal = NULL;
-						resultList= addToResultList(resultList, e);
+						resultList= addToResultList(resultList, exprList);
 					}
 					else {
 						fatalError("Item not found in symbol table!\n");
 					}
 				}
-				exprList = exprList->n;
-				e = exprList->e;
-				if (e->type == eExprList) {
-					if (e->eVal->e->type == eIdent
-						&& strcmp(e->eVal->e->sVal, "quote") == 0) {
-						//add the rest of this
-					}
-				}
-				else if (e->type == eIdent) {
-					if (inSymTab(e->sVal)) {
-						e->iVal = getDef(symboltable, e->sVal);
-						e->type = eInt;
-						e->sVal = NULL;
-						//add the rest of this
-					}
-				}
-				else {
-					//add the rest of this
-				}
+				
+				printf("( ");
 				printResultList(resultList);
+				printf(" )\n");
 				// Redirect pointer to end of list
 				while (exprList->n != NULL) {
 					exprList = exprList->n;
 				}
+				return resultList;
 			}
 
 			//If user-defined identifier
 			else if (strcmp(e->sVal, "define")==0) {
 				//assign identifier to a value
-				int eval = evaluate(exprList->n->n);
-				symboltable = addToSymTab(exprList->n->e->sVal, eval);
+				exprs *eval = evaluate(exprList->n->n);
+				symboltable = addToSymTab(exprList->n->e->sVal, eval->e->iVal);
 			}
 			else {
 				if(inSymTab( e->sVal)) {
