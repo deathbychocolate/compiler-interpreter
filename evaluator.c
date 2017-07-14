@@ -8,13 +8,38 @@
 int result = 0;
 char op = ' ';
 int initialise = 1;
-exprs *resultList;
 symtab *symboltable;
 
-void addToResultList(exprs *e) {
+exprs *makeNewResultList(exprs *resultList, exprs *e) {
 	if (resultList == NULL) {
 		resultList = newExprList(e->e, e->n);
 	}
+}
+expr *makeNewExpr(expr *e) {
+	expr *result = malloc(sizeof(expr));
+	result->type = e->type;
+	result->iVal = e->iVal;
+	result->sVal = e->sVal;
+
+	if (result->type == eExprList) {
+		result->eVal = makeNewResultList(e->eVal, e->eVal->e);
+	}
+	return result;
+}
+
+exprs *addToResultList(exprs *resultList, expr *e) {
+	expr *tempExpr = makeNewExpr(e);
+	if (resultList == NULL) {
+		resultList = newExprList(NULL,NULL);
+	}
+	exprs *temp = resultList; 
+	while (temp->n!=NULL && temp->e != NULL)
+	{
+		temp = temp->n;
+	}
+	temp->e = tempExpr;
+
+	return resultList;
 }
 
 void printResultList(exprs *list){
@@ -35,7 +60,6 @@ void printResultList(exprs *list){
 		}
 		temp = temp->n;
 	}
-
 }
 
 //check if the given identifier is in the symbol table
@@ -104,7 +128,6 @@ int getDef(symtab *sthead, char *ident) {
 			return cursor->def->iVal;
 		}
 		cursor = cursor->nextdef;
-
 	}
 
 	//This should not happen! We already checked if
@@ -126,8 +149,7 @@ void printItem(expr *e) {
 }
 
 //evaluate the expression
-//the symtab variable "symboltable" is created in main()
-int evaluate(exprs *exprList) {
+exprs *evaluate(exprs *exprList) {
 
 	expr *e = exprList->e;
 
@@ -138,15 +160,13 @@ int evaluate(exprs *exprList) {
 		case eIdent:
 			//+, -, /, or *
 			if (strcmp(e->sVal, "+") == 0) {
-				result = 0;
 				op = '+';
-				result = evaluate(exprList->n);
+				evaluate(exprList->n);
 			}
 
 			else if (strcmp(e->sVal, "-") == 0) {
-				result = 0;
 				op = '-';
-				result = evaluate(exprList->n);
+				evaluate(exprList->n);
 			}
 			// car handling
 			else if (strcmp(e->sVal, "car") == 0) {
@@ -155,6 +175,7 @@ int evaluate(exprs *exprList) {
 					strcmp(exprList->e->eVal->e->sVal, "quote") == 0) {
 					exprList = exprList->e->eVal->n;
 					printItem(exprList->e);
+					return exprList->n;
 				}
 
 				else{
@@ -173,6 +194,7 @@ int evaluate(exprs *exprList) {
 						exprList = exprList->n;
 						printItem(exprList);
 					}
+					return exprList;
 				}
 				else {
 					fatalError("Not a valid cdr argument");
@@ -180,26 +202,78 @@ int evaluate(exprs *exprList) {
 			}
 			// prints off a list with provided values
 			else if (strcmp(e->sVal, "list") == 0) {
-				while (exprList->n != NULL) {
-					exprList = exprList->n;
-					if (exprList->e->type == eExprList &&
-						(strcmp(exprList->e->eVal->e->sVal, "quote") == 0)) {
-						addToResultList(exprList->e->eVal->n);
-					}
-					else if (exprList->e->type == eInt || exprList->e->type == eString) {
-						addToResultList(exprList);
-					}
-					else if (exprList->e->type == eIdent && inSymTab(exprList->e->sVal)) {
-						exprList->e->iVal = getDef(symboltable, exprList->e->sVal);
-						exprList->e->type = eInt;
-						exprList->e->sVal = NULL;
-						addToResultList(exprList);
-					}
+				exprs *resultList = NULL;
+				exprList = exprList->n;
+				if (exprList->e->type == eExprList &&
+					(strcmp(exprList->e->eVal->e->sVal, "quote") == 0)) {
+					resultList= makeNewResultList(resultList,exprList->e->eVal->n);
+				}
+				else if (exprList->e->type == eInt || exprList->e->type == eString) {
+					resultList= makeNewResultList(resultList,exprList);
+				}
+				else if (exprList->e->type == eIdent && inSymTab(exprList->e->sVal)) {
+					exprList->e->iVal = getDef(symboltable, exprList->e->sVal);
+					exprList->e->type = eInt;
+					exprList->e->sVal = NULL;
+					resultList= makeNewResultList(resultList,exprList);
 				}
 				printf("( ");
 				printResultList(resultList);
 				printf(")\n");
+				// Redirect pointer to end of list
+				while (exprList->n != NULL) {
+					exprList = exprList->n;
+				}
 			}
+
+			//cons case
+			else if (strcmp(e->sVal, "cons")==0) {
+				exprs *resultList = NULL;
+				exprList = exprList->n;
+				e = exprList->e;
+				if (e->type == eExprList) {
+					if (e->eVal->e->type == eIdent
+						&& strcmp(e->eVal->e->sVal, "quote") == 0) {
+						resultList= addToResultList(resultList, e->eVal->n->e);
+					}
+				}
+				else if (e->type == eIdent) {
+					if (inSymTab(e->sVal)) {
+						e->iVal = getDef(symboltable, e->sVal);
+						e->type = eInt;
+						e->sVal = NULL;
+						resultList= addToResultList(resultList, e);
+					}
+					else {
+						fatalError("Item not found in symbol table!\n");
+					}
+				}
+				exprList = exprList->n;
+				e = exprList->e;
+				if (e->type == eExprList) {
+					if (e->eVal->e->type == eIdent
+						&& strcmp(e->eVal->e->sVal, "quote") == 0) {
+						//add the rest of this
+					}
+				}
+				else if (e->type == eIdent) {
+					if (inSymTab(e->sVal)) {
+						e->iVal = getDef(symboltable, e->sVal);
+						e->type = eInt;
+						e->sVal = NULL;
+						//add the rest of this
+					}
+				}
+				else {
+					//add the rest of this
+				}
+				printResultList(resultList);
+				// Redirect pointer to end of list
+				while (exprList->n != NULL) {
+					exprList = exprList->n;
+				}
+			}
+
 			//If user-defined identifier
 			else if (strcmp(e->sVal, "define")==0) {
 				//assign identifier to a value
@@ -208,10 +282,12 @@ int evaluate(exprs *exprList) {
 			}
 			else {
 				if(inSymTab( e->sVal)) {
-					return getDef(symboltable, e->sVal);
+					exprList->e->iVal = getDef(symboltable, e->sVal);
+					exprList->e->type = eInt;
+					exprList->e->sVal = NULL;
+					return exprList;
 				}
 				else {
-					printf(e->sVal);
 					fatalError("Uninitialized identifier");
 				}
 			}
@@ -228,10 +304,8 @@ int evaluate(exprs *exprList) {
 				switch (op)
 				{
 					case '+':
-						result += evaluate(exprList);
 						break;
 					case '-':
-						result -= evaluate(exprList);
 						break;
 					default:
 						break;
@@ -257,5 +331,5 @@ int evaluate(exprs *exprList) {
 	if (exprList->n != NULL) {
 		evaluate(exprList->n);
 	}
-	return (result);
+	return exprList;
 }
