@@ -21,14 +21,17 @@ exprs *addToResultList(exprs *resultList, exprs *e) {
 	if (resultList == NULL) {
 		resultList = newExprList(e->e,e->n);
 	}
-	else
-	{
+	else {
 		exprs *temp = resultList;
-		while (temp->n != NULL)
+		while (temp->n != NULL && temp->e != NULL)
 		{
-			temp = temp->n;
+			exprs *temp = resultList;
+			while (temp->n != NULL)
+			{
+				temp = temp->n;
+			}
+			temp->n = e;
 		}
-		temp->n = e;
 	}
 
 	return resultList;
@@ -146,6 +149,7 @@ void printItem(expr *e) {
 exprs *evaluate(exprs *exprList) {
 
 	expr *e = exprList->e;
+	exprs *ret; //see eInt case
 
 	switch (e->type) {
 		case eString:
@@ -155,12 +159,98 @@ exprs *evaluate(exprs *exprList) {
 			//+, -, /, or *
 			if (strcmp(e->sVal, "+") == 0) {
 				op = '+';
-				evaluate(exprList->n);
+				while (exprList->n != NULL) {
+					exprList = exprList->n;
+					e = exprList->e;
+					//if (e->type == eExprList) {
+					//	ret = evaluate(e->eVal);
+
+					//}
+					if(e->type==eIdent){
+						if(inSymTab(e->sVal)){
+							result += getDef(symboltable, e->sVal);
+						}
+						else{
+							fatalError("Invalid recursive program!");
+						}
+					}
+					else{
+						result += e->iVal;
+					}
+				}
+				printf(" ==>%d\n", result);
 			}
 
 			else if (strcmp(e->sVal, "-") == 0) {
 				op = '-';
-				evaluate(exprList->n);
+				while (exprList->n != NULL) {
+					exprList = exprList->n;
+					e = exprList->e;
+					//if (e->type == eExprList) {
+					//	ret = evaluate(e->eVal);
+
+					//}
+					if(e->type==eIdent){
+						if(inSymTab(e->sVal)){
+							result += getDef(symboltable, e->sVal);
+						}
+						else{
+							fatalError("Invalid recursive program!");
+						}
+					}
+					else{
+						result -= e->iVal;
+					}
+				}
+				printf(" ==>%d\n", result);
+			}
+
+			else if (strcmp(e->sVal, "*") == 0) {
+				op = '*';
+				while (exprList->n != NULL) {
+					exprList = exprList->n;
+					e = exprList->e;
+					//if (e->type == eExprList) {
+					//	ret = evaluate(e->eVal);
+
+					//}
+					if(e->type==eIdent){
+						if(inSymTab(e->sVal)){
+							result += getDef(symboltable, e->sVal);
+						}
+						else{
+							fatalError("Invalid recursive program!");
+						}
+					}
+					else{
+						result *= e->iVal;
+					}
+				}
+				printf(" ==>%d\n", result);
+			}
+
+			else if (strcmp(e->sVal, "/") == 0) {
+				op = '/';
+				while (exprList->n != NULL) {
+					exprList = exprList->n;
+					e = exprList->e;
+					//if (e->type == eExprList) {
+					//	ret = evaluate(e->eVal);
+
+					//}
+					if(e->type==eIdent){
+						if(inSymTab(e->sVal)){
+							result += getDef(symboltable, e->sVal);
+						}
+						else{
+							fatalError("Invalid recursive program!");
+						}
+					}
+					else{
+						result /= e->iVal;
+					}
+				}
+				printf(" ==>%d\n", result);
 			}
 			// car handling
 			else if (strcmp(e->sVal, "car") == 0) {
@@ -288,7 +378,8 @@ exprs *evaluate(exprs *exprList) {
 				exprList = exprList->n;
 				e = exprList->e;
 				if (e->type == eExprList) {
-					result = evaluate(e->eVal);
+					ret = evaluate(e->eVal);
+
 				}
 				switch (op)
 				{
