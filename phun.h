@@ -80,7 +80,7 @@ exprs *evaluate(exprs *exprList);
 int inSymTab(char *ident);
 symtab* addToSymTab(char *ident, int eval);
 int getDef(symtab *sthead, char *ident);
-exprs *addToResultList(exprs *resultList, expr *e);
+exprs *addToResultList(exprs *resultList, exprs *e);
 
 
 /* end of phun.h */
